@@ -24,11 +24,12 @@ string data_name(int ktore)
 
 int C_max(zadanie zadania[500], int *Kol_id, int ile_zad, int m)
 {
-  int *C_maszyny = (int *)malloc(sizeof(int) * m);
-  for (int masz = 0; masz < m; masz++)
-  {
-    C_maszyny[masz] = 0;
-  }
+  // int *C_maszyny = (int *)malloc(sizeof(int) * m);
+  // for (int masz = 0; masz < m; masz++)
+  // {
+  //   C_maszyny[masz] = 0;
+  // }
+
   for (int zad = 0; zad < ile_zad; zad++)
   {
     C_maszyny[0] += zadania[Kol_id[zad]].p[0];

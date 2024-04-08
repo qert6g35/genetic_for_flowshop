@@ -2,19 +2,40 @@
 
 class Zadanie:
 
-  def __init__(self,czasy,_id) -> None:
+  def __init__(self,czasy,_id):
     self.id = _id
     self.czasy = []
     for liczba in czasy.split(' '):
       self.czasy.append(int(liczba))
     #print("id:" + str(self.id) +" czasy:" + str(self.czasy))
 
-def C_max(zadania, permutacja):
-  max_czas = 0
-  return max_czas
 
-def genetic(Zadania, Maszyny):
-  print(str(Zadania))
+def getZadanie(Zadania,Z_id):
+  for zadanie in Zadania:
+    if(zadanie.id == Z_id):
+      return zadanie
+
+def C_max(zadania, permutacja, m):
+  C_maszyn = []
+  for _ in range(0,m):
+    C_maszyn.append(0)
+  
+  for zad_id in permutacja:
+    zadanie = getZadanie(zadania,zad_id)
+    C_maszyn[0] += zadanie.czasy[0]
+    for i in range(1,m):
+      if(C_maszyn[i-1] > C_maszyn[i]):
+        C_maszyn[i] = C_maszyn[i-1]
+      C_maszyn[i] = zadanie.czasy[i]
+
+  return C_maszyn[m-1]
+
+
+  
+  
+
+def genetic(Zadania, m):
+  print(C_max(Zadania,[],m))
 
 
 zbieranie_wymiarow = False
@@ -45,5 +66,5 @@ for line in open('data.txt', 'rt'):
   if(len(line_data) > 4):
     if( line_data[0] + line_data[1] + line_data[2] + line_data[3] == 'data' ):
       zbieranie_wymiarow = True
-      if(line_data[-2] == '2'):
+      if(line_data[-2] == '1'):
         break
