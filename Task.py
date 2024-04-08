@@ -1,11 +1,14 @@
+from RandomGenerator import RandomGenerator
+import copy
+
 class Task:
 
   def __init__(self,times,_id):
     self.id = _id
-    self.times = []
-    for n in times.split(' '):
-      self.times.append(int(n))
-    #print("id:" + str(self.id) +" times:" + str(self.times))
+    self.times = times
+
+  def __str__(self):
+    return f"{self.id},{self.times}"
 
 
 def getTask(Tasks,Task_id):

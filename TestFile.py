@@ -1,8 +1,16 @@
-from RandomGenerator import RandomGenerator 
+from TestingEssentials import GenerateJ, FromTasksToMatrix, EvaluateC, CalculateCmax, tasks_df, start_t, plot_schedule
+from Task import Task
+A = GenerateJ(6,3,3)
 
-seed = 123
-generator = RandomGenerator(seed)
-
-for _ in range(10):
-    print(generator.next_int())
+for task in A:
+    print(task)
     
+print(EvaluateC(A))
+print(CalculateCmax(A))
+
+a, b = FromTasksToMatrix(A)
+c = start_t(A,EvaluateC(A))
+
+df = tasks_df(a,b,c)
+print(df)
+plot_schedule(df)

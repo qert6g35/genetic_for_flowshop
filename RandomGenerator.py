@@ -6,5 +6,5 @@ class RandomGenerator:
         self.seed = seed
         random.seed(seed)
 
-    def next_int(self):
-        return random.randint(1, 30)
+    def next_int(self, low, high):
+        return random.randint(low, high)

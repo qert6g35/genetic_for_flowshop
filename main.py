@@ -1,7 +1,7 @@
 from Task import Task, genetic
 
 zbieranie_wymiarow = False
-zadania = []
+J = []
 n_wczytywanie = 0 # zmienna pomocnicza do wczytywania danych
 m = 0 # ilość maszyn zapis per zestaw danych
 n = 0 # ilość zadań  zapis per zestaw danych
@@ -11,9 +11,9 @@ for line in open('data.txt', 'rt'):
 
   if(n_wczytywanie > 0):
     n_wczytywanie = n_wczytywanie -1
-    zadania.append(Task(line_data,n - n_wczytywanie))
+    J.append(Task(line_data.split(' '),n - 1 - n_wczytywanie))
     if(n_wczytywanie == 0):
-      genetic(zadania,m)
+      genetic(J,m)
 
 
   if(zbieranie_wymiarow):
@@ -22,7 +22,7 @@ for line in open('data.txt', 'rt'):
     n = int(wym[0])
     n_wczytywanie = n
     m = int(wym[1])
-    zadania = []
+    J = []
 
 
   if(len(line_data) > 4):
