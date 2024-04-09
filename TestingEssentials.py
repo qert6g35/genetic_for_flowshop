@@ -25,9 +25,16 @@ def generate_random_color(rng):
     b = rng.next_int(0, 255)
     color_hex = '#{:02x}{:02x}{:02x}'.format(r, g, b)
     return color_hex    
+
+# zwraca dataframe z taskami do wykresu
+# Przyjmowane zmienne
+# pi            - lista z kolejnymi indeksami - id z def FromTasksToMatrix(_J):
+# Tasks         - lista z zadaniami - z def FromTasksToMatrix(_J):
+# start_times   - macierz czasow startowych dla zadan -  wygenerowac z funkcji start_t
 #
-#   TO DO 
-#
+# Zwracane zmienne
+# df            - dataframe potrzebny do wygenerowania wykresu
+
 def tasks_df(pi,Tasks, start_times):
     n = len(Tasks)  # liczba zadań
     m = len(Tasks[0])  # liczba mapipszyn
@@ -47,15 +54,23 @@ def tasks_df(pi,Tasks, start_times):
     df = pd.DataFrame(data, columns=['Zadanie', 'Maszyna', 'Czas_Rozpoczęcia', 'Czas_Trwania','Color'])
     return df
 
+# Wyświetla poglądowy wykres ganta dla ulozonych zadań
+# Przyjmowane zmienne
+# df            - dataframe generowany przez funckje task_df
+
 def plot_schedule(df):
     fig, ax = plt.subplots(1, figsize=(16,6))
     ax.barh(df.Maszyna, df.Czas_Trwania, left=df.Czas_Rozpoczęcia,color=df.Color)
     plt.show()
 
+# Wyświetla wykres ganta dla ulozonych zadań
+# Przyjmowane zmienne
+# pi            - lista z kolejnymi indeksami - id z def FromTasksToMatrix(_J):
+# Tasks         - lista z zadaniami - z def FromTasksToMatrix(_J):
+# start_times   - macierz czasow startowych dla zadan - wygenerowac z funkcji start_t
 #
-#   TO DO
-#
-def plot_schedule_fancy(pi,start_times,Tasks):
+
+def plot_schedule_fancy(pi,Tasks, start_times):
     n = len(Tasks)  # liczba zadań
     m = len(Tasks[0])  # liczba mapipszyn
     data = []
@@ -132,6 +147,7 @@ def FromTasksToMatrix(_J):
 #
 # Zwracane zmienne
 # C         - lista z listami czasów obiektów
+# id        - lista z id obiektów task
 
 def EvaluateC(_J):           
     _, J_matrix = FromTasksToMatrix(_J)
