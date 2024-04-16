@@ -1,30 +1,24 @@
-from TestingEssentials import GenerateJ, EvaluateC, C_Max, C_MaxFromC
+from TestingEssentials import GenerateJ, EvaluateC, C_Max, C_MaxFromC, start_t
+from DataVisualization import plot_schedule_fancy
 from GeneticAlgorithm import GeneticAlgorithm
 import numpy as np
-J, pi = GenerateJ(6,3,3)
+from matplotlib.animation import FuncAnimation
+import matplotlib.pyplot as plt
 
-##########################################################
-#
-#   w razie pytań, to jest plac budowy na którym testuje swój kod
-#
-##########################################################
 
-# for task in J:
-#     print(task)
-    
+# Przykładowe użycie
+J, _  = GenerateJ(10,3,5)
 
-# print(EvaluateC(J, pi))
-# print(CalculateCmax(J, pi))
+print(J)
+# Parametry algorytmu genetycznego
+population_size = 50
+mutation_rate = 0.1
+generations = 20
 
-# S = start_t(J, pi,EvaluateC(J, pi))
+# Wielkość problemu (liczba elementów w permutacji)
+n = 10
 
-# df = tasks_df(pi,J,S)
-# # print(df)
-# # plot_schedule_fancy(a,b,c)
-
-# # plot_schedule_fancy(pi,J,S)
-# n = 5
-
-# print(C_MaxFromC(EvaluateC(J,pi)))
-# print(C_Max(J,pi))
-
+# Uruchomienie algorytmu genetycznego
+ga = GeneticAlgorithm(J, population_size, mutation_rate, generations)
+best_solutions = ga.Genetic()
+print(best_solutions)

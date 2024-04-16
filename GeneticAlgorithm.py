@@ -80,16 +80,17 @@ class GeneticAlgorithm:
             solution[idx1], solution[idx2] = solution[idx2], solution[idx1]
         return solution
 
-
-    # Algorytm genetyczny
     def Genetic(self):
         """Implementacja genetycznego algorytmu optymalizacji.
 
         Returns:
-            list: Najlepsze rozwiązanie.
+            list: Lista najlepszych rozwiązań w kolejnych generacjach.
         """
-        # GENEROWANIE 1. POKOLENIA
+        best_solutions = []
+
+        # Generowanie 1. pokolenia
         population = self.initializePopulation()
+
         for _ in range(self.generations):
             # Ocena populacji
             evaluated_population = [(solution, self.evaluate(solution)) for solution in population]
@@ -111,6 +112,8 @@ class GeneticAlgorithm:
             # Aktualizacja populacji
             population = children
 
-        # Wybór najlepszego rozwiązania
-        best_solution, best_fitness = evaluated_population[0]
-        return best_solution
+            # Wybór najlepszego rozwiązania
+            best_solution, _ = evaluated_population[0]
+            best_solutions.append(best_solution)
+
+        return best_solutions
