@@ -62,18 +62,3 @@ def C_Max(data, permutation):
       Cmax[i] += task[i]
   return Cmax[m-1]
 
-def Genetic(data, generations):
-  print(str(data),generations)
-
-  #GENEROWANIE 1. POKOLENIA
-
-  for _ in range(0,generations):
-    print("need to work on thoes:")
-      #przetrwanie, eliminacja jednostek w pokoleniu, robimy przetrwanie z losowaniem
-
-      #krzyżowanie osobników, sugestia prow:/krzyżówka klasyczna/
-
-      #mutacja osobników
-
-      #DODATKOWO warunek zakończenia np ilosć iteracji bez poprawy
-    
