@@ -1,18 +1,23 @@
 import numpy as np
 
-# Słowniczek
-# population - lista permutacji
-# candidate - osobnik, permutacja zadań
-
-# inicjalizuje populacje dla algorytmu genetycznego
-# Przyjmowane zmienne
-# _size         - rozmiar populacji
-# _n            - ilość zadań 
-# 
-# Zwracane zmienne
-# population    - populacja niepowtarzających się osobników
+######################################3#
+#
+#   Słowniczek
+#
+#   population - lista permutacji
+#   candidate - osobnik, permutacja zadań
+#
 
 def initializePopulation(_size,_n):
+    """inicjalizuje populacje dla algorytmu genetycznego
+
+    Args:
+        _size (int): rozmiar populacji
+        _n (int): ilość zadań 
+
+    Returns:
+        array: populacja niepowtarzających się osobników
+    """
     population = []
     population_size = 0
     while population_size < _size:
@@ -23,7 +28,7 @@ def initializePopulation(_size,_n):
     return population
 
 
-# algorytm genetyczny
+# algorytm genetyczny - opis jeszcze moze sie zmieni
 # Przyjmowane zmienne
 # data          - 
 # generations   - 
