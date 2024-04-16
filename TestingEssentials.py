@@ -3,107 +3,10 @@ from matplotlib.ticker import MaxNLocator
 import matplotlib.pyplot as plt
 import pandas as pd
 import copy
-from matplotlib.patches import Patch
 
 ##########################################################
 #
-#           Część odpowiedzialna za wykresy - wymaga przerobienia pod nowy typ Task
-#
-##########################################################
-
-# Generuje losowy kolor dla zadania do wykresu
-# Przyjmowane zmienne
-# rng       - obiekt RandomGenerator
-#
-# Zwracane zmienne
-# color_hex - kod hex koloru
-
-def generate_random_color(rng):
-    r = rng.next_int(0, 255)
-    g = rng.next_int(0, 255)
-    b = rng.next_int(0, 255)
-    color_hex = '#{:02x}{:02x}{:02x}'.format(r, g, b)
-    return color_hex    
-
-# zwraca dataframe z taskami do wykresu
-# Przyjmowane zmienne
-# J             - lista zadań
-# pi            - permutacja
-# start_times   - harmonogram czasów rozpoczęcia
-#
-# Zwracane zmienne
-# df            - dataframe potrzebny do wygenerowania wykresu
-
-def tasks_df(pi, J, start_times):
-    n = len(J)  # liczba zadań
-    m = len(J[0])  # liczba mapipszyn
-    data = []
-    Tasks = [J[pi[i]] for i in range(len(pi))]
-    c_dict = {}
-    rng = RandomGenerator(1)
-    for task in range(n):
-        for machine in range(m):
-            start_time = start_times[task][machine]
-            duration = Tasks[task][machine]
-            hlp =  str(pi[task])
-            if not hlp in c_dict:
-                c_dict[hlp] = generate_random_color(rng)
-            color = c_dict[hlp]
-            data.append([pi[task], machine+1, start_time, duration, color])
-
-    df = pd.DataFrame(data, columns=['Zadanie', 'Maszyna', 'Czas_Rozpoczęcia', 'Czas_Trwania','Color'])
-    return df
-
-# Wyświetla poglądowy wykres ganta dla ulozonych zadań
-# Przyjmowane zmienne
-# df            - dataframe generowany przez funckje task_df
-
-def plot_schedule(df):
-    fig, ax = plt.subplots(1, figsize=(16,6))
-    ax.barh(df.Maszyna, df.Czas_Trwania, left=df.Czas_Rozpoczęcia,color=df.Color)
-    plt.show()
-
-# Wyświetla wykres ganta dla ulozonych zadań
-# Przyjmowane zmienne
-# J             - lista zadań
-# pi            - permutacja
-# start_times   - harmonogram czasów rozpoczęcia
-#
-
-def plot_schedule_fancy(pi, J, start_times):
-    n = len(J)  # liczba zadań
-    m = len(J[0])  # liczba mapipszyn
-    Tasks = [J[pi[i]] for i in range(len(pi))]
-    data = []
-    c_dict = {}
-    end_set = set()
-    rng = RandomGenerator(1)
-    for task in range(n):
-        for machine in range(m):
-            start_time = start_times[task][machine]
-            duration = Tasks[task][machine]
-            end_set.add(start_time+duration)
-            hlp = str(pi[task])
-            if not hlp in c_dict:
-                c_dict[hlp] = generate_random_color(rng)
-            color = c_dict[hlp]
-            data.append([pi[task], machine+1, start_time, duration, color])
-
-    df = pd.DataFrame(data, columns=['Zadanie', 'Maszyna', 'Czas_Rozpoczęcia', 'Czas_Trwania','Color'])
-    fig, ax = plt.subplots(1, figsize=(16,6))
-    ax.barh(df.Maszyna, df.Czas_Trwania, left=df.Czas_Rozpoczęcia,color=df.Color)
-    legend_elements = [Patch(facecolor=c_dict[i], label=i)  for i in c_dict]
-    plt.legend(handles=legend_elements)
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.xlabel('czas')
-    plt.ylabel('maszyny')
-    plt.xticks(list(end_set))
-    plt.show()
-    
-    
-##########################################################
-#
-#           Część odpowiedzialna za operacje na zbiorze zadań i permutacji
+#           Część odpowiedzialna za podstawowe operacje na zbiorze zadań i permutacji
 #
 ##########################################################
 
@@ -111,7 +14,7 @@ def plot_schedule_fancy(pi, J, start_times):
 # Przyjmowane zmienne
 # _n        - ilość zadań
 # _M        - ilość maszyn
-# _seed     - seed dla generatora pseudolosowego
+# _seed     - seed dla generatora pseudolosowegos
 #
 # Zwracane zmienne
 # J         - lista zadań
@@ -128,6 +31,51 @@ def GenerateJ(_n,_M,_seed):
         pi.append(i);
         J.append(copy.deepcopy(p_ij))
     return J, pi
+
+#
+# funkcja pobierająca dane makuchowskiego i zwracająca 
+# listę:[przypadki]
+# przypadek:[zadania]
+# zadanie:[czasy {4,2,5 ...}]
+# czasy to kolejne jednostki czasowe opisujące czas wykonywania się elementu zadania na jednej maszynie
+def getMakData():
+  dataToReturn = []
+  zbieranie_wymiarow = False
+  J = []
+  n_wczytywanie = 0 # zmienna pomocnicza do wczytywania danych
+  m = 0 # ilość maszyn zapis per zestaw danych
+  n = 0 # ilość zadań  zapis per zestaw danych
+
+  for line in open('data.txt', 'rt'):
+    line_data = line.rstrip()
+
+    if(n_wczytywanie > 0):
+      n_wczytywanie = n_wczytywanie -1
+      H = []
+      for strNum in line_data.split(' '):
+        H.append(int(strNum))
+      J.append(H)
+      if(n_wczytywanie == 0):
+        dataToReturn.append(J)
+        #print(str(J))
+
+
+    if(zbieranie_wymiarow):
+      zbieranie_wymiarow = False
+      wym = line_data.split(' ')
+      n = int(wym[0])
+      n_wczytywanie = n
+      m = int(wym[1])
+      J = []
+
+
+    if(len(line_data) > 4):
+      if( line_data[0] + line_data[1] + line_data[2] + line_data[3] == 'data' ):
+        zbieranie_wymiarow = True
+        if(line_data[-2] == '3'):
+          break
+
+  return dataToReturn
 
 # Oblicza C dla kolejności zadań w podanym _J, rozszerzalne na wiele maszyn
 # Przyjmowane zmienne
@@ -155,17 +103,34 @@ def EvaluateC(_J, _pi):
                                                            # Aby uzyskać czas ukończenia musimy dodać jeszcze czas trwania
     return C
 
-# Oblicza Cmax dla kolejności zadań w podanym _J, rozszerzalne na wiele maszyn
+# Oblicza Cmax dla kolejności zadań w podanym _J, na podstawie harmonogramu czasów
 # Przyjmowane zmienne
-# _J        - lista zadań
-# _pi       - permutacja
+# C         - harmonogram czasów zakończenia
 #
 # Zwracane zmienne
 # Cmax      - czas zakończenia ostatniego zadania
 
-def CalculateCmax( _J, _pi):
-    Cmax = EvaluateC(_J, _pi)
-    return Cmax[-1][-1]
+def C_MaxFromC(C):
+    Cmax = C[-1][-1]
+    return Cmax
+
+#
+#   funkcja wyliczająca długość ciągu o podanych danych (data) i podanej permutacji (permutation)
+#
+def C_Max(data, permutation):
+  m = len(data[0])
+  Cmax = []
+  for _ in range(0,m):
+    Cmax.append(0)
+  
+  for task_id in permutation:
+    task = data[task_id]
+    Cmax[0] += task[0]
+    for i in range(1,m):
+      if(Cmax[i-1] > Cmax[i]):
+        Cmax[i] = Cmax[i-1]
+      Cmax[i] += task[i]
+  return Cmax[m-1]
 
 # Oblicza C dla kolejności zadań w podanym _J, rozszerzalne na wiele maszyn
 # Przyjmowane zmienne

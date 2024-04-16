@@ -1,7 +1,12 @@
-from TestingEssentials import GenerateJ, EvaluateC, CalculateCmax, tasks_df, start_t, plot_schedule, plot_schedule_fancy
+from TestingEssentials import GenerateJ, EvaluateC, C_Max, C_MaxFromC
 import numpy as np
 J, pi = GenerateJ(6,3,3)
 
+##########################################################
+#
+#   w razie pytań, to jest plac budowy na którym testuje swój kod
+#
+##########################################################
 
 # for task in J:
 #     print(task)
@@ -18,4 +23,6 @@ J, pi = GenerateJ(6,3,3)
 
 # plot_schedule_fancy(pi,J,S)
 n = 5
-print(np.random.permutation(n))
+
+print(C_MaxFromC(EvaluateC(J,pi)))
+print(C_Max(J,pi))
