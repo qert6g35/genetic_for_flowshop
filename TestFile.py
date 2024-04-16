@@ -1,4 +1,5 @@
 from TestingEssentials import GenerateJ, EvaluateC, C_Max, C_MaxFromC
+from GeneticAlgorithm import GeneticAlgorithm
 import numpy as np
 J, pi = GenerateJ(6,3,3)
 
@@ -21,8 +22,9 @@ J, pi = GenerateJ(6,3,3)
 # # print(df)
 # # plot_schedule_fancy(a,b,c)
 
-# plot_schedule_fancy(pi,J,S)
-n = 5
+# # plot_schedule_fancy(pi,J,S)
+# n = 5
 
-print(C_MaxFromC(EvaluateC(J,pi)))
-print(C_Max(J,pi))
+# print(C_MaxFromC(EvaluateC(J,pi)))
+# print(C_Max(J,pi))
+
