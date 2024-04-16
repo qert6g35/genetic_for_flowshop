@@ -1,20 +1,18 @@
-from TestingEssentials import GenerateJ, FromTasksToMatrix, EvaluateC, CalculateCmax, tasks_df, start_t, plot_schedule, plot_schedule_fancy
-from Task import Task
-A = GenerateJ(6,3,3)
+from TestingEssentials import GenerateJ, EvaluateC, CalculateCmax, tasks_df, start_t, plot_schedule, plot_schedule_fancy
+J, pi = GenerateJ(6,3,3)
 
 
-for task in A:
+for task in J:
     print(task)
     
 
-print(EvaluateC(A))
-print(CalculateCmax(A))
+print(EvaluateC(J, pi))
+print(CalculateCmax(J, pi))
 
-a, b = FromTasksToMatrix(A)
-c = start_t(A,EvaluateC(A))
+S = start_t(J, pi,EvaluateC(J, pi))
 
-df = tasks_df(a,b,c)
+df = tasks_df(pi,J,S)
 # print(df)
 # plot_schedule_fancy(a,b,c)
 
-plot_schedule_fancy(a,b,c)
+plot_schedule_fancy(pi,J,S)

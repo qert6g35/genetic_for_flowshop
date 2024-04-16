@@ -2,7 +2,6 @@ from RandomGenerator import RandomGenerator
 from matplotlib.ticker import MaxNLocator
 import matplotlib.pyplot as plt
 import pandas as pd
-from Task import Task
 import copy
 from matplotlib.patches import Patch
 
@@ -28,17 +27,18 @@ def generate_random_color(rng):
 
 # zwraca dataframe z taskami do wykresu
 # Przyjmowane zmienne
-# pi            - lista z kolejnymi indeksami - id z def FromTasksToMatrix(_J):
-# Tasks         - lista z zadaniami - z def FromTasksToMatrix(_J):
-# start_times   - macierz czasow startowych dla zadan -  wygenerowac z funkcji start_t
+# J             - lista zadań
+# pi            - permutacja
+# start_times   - harmonogram czasów rozpoczęcia
 #
 # Zwracane zmienne
 # df            - dataframe potrzebny do wygenerowania wykresu
 
-def tasks_df(pi,Tasks, start_times):
-    n = len(Tasks)  # liczba zadań
-    m = len(Tasks[0])  # liczba mapipszyn
+def tasks_df(pi, J, start_times):
+    n = len(J)  # liczba zadań
+    m = len(J[0])  # liczba mapipszyn
     data = []
+    Tasks = [J[pi[i]] for i in range(len(pi))]
     c_dict = {}
     rng = RandomGenerator(1)
     for task in range(n):
@@ -65,14 +65,15 @@ def plot_schedule(df):
 
 # Wyświetla wykres ganta dla ulozonych zadań
 # Przyjmowane zmienne
-# pi            - lista z kolejnymi indeksami - id z def FromTasksToMatrix(_J):
-# Tasks         - lista z zadaniami - z def FromTasksToMatrix(_J):
-# start_times   - macierz czasow startowych dla zadan - wygenerowac z funkcji start_t
+# J             - lista zadań
+# pi            - permutacja
+# start_times   - harmonogram czasów rozpoczęcia
 #
 
-def plot_schedule_fancy(pi,Tasks, start_times):
-    n = len(Tasks)  # liczba zadań
-    m = len(Tasks[0])  # liczba mapipszyn
+def plot_schedule_fancy(pi, J, start_times):
+    n = len(J)  # liczba zadań
+    m = len(J[0])  # liczba mapipszyn
+    Tasks = [J[pi[i]] for i in range(len(pi))]
     data = []
     c_dict = {}
     end_set = set()
@@ -109,48 +110,36 @@ def plot_schedule_fancy(pi,Tasks, start_times):
 # Zwraca listę J obiektów typu Task na podstawie zadanych parametrów
 # Przyjmowane zmienne
 # _n        - ilość zadań
-# _m        - ilość maszyn
+# _M        - ilość maszyn
 # _seed     - seed dla generatora pseudolosowego
 #
 # Zwracane zmienne
-# J         - lista obiektów typu Task
+# J         - lista zadań
+# pi        - permutacja
 
 def GenerateJ(_n,_M,_seed):     
     rng = RandomGenerator(_seed)
     n = _n
     M  = _M
-    J =[]
+    J = []
+    pi = []
     for i in range(n):
         p_ij = [rng.next_int(1, 9) for _ in range(M)]
-        J.append(copy.deepcopy(Task(p_ij,i)))
-    return J
-
-# Na potrzeby pozostałych funkcji w tym pliku, zmienia listę obiektów typu Task na listę id i listę list czasów J_matrix
-# Przyjmowane zmienne
-# _J        - lista obiektów typu Task
-#
-# Zwracane zmienne
-# J_matrix  - lista z listami czasów obiektów
-# id        - lista z indeksami
-
-def FromTasksToMatrix(_J):
-    J_matrix = []
-    id = []
-    for i in range(len(_J)):
-        J_matrix.append(_J[i].times)
-        id.append(_J[i].id)
-    return id, J_matrix
+        pi.append(i);
+        J.append(copy.deepcopy(p_ij))
+    return J, pi
 
 # Oblicza C dla kolejności zadań w podanym _J, rozszerzalne na wiele maszyn
 # Przyjmowane zmienne
-# _J        - lista obiektów typu Task
+# _J        - lista zadań
+# _pi       - permutacja
 #
 # Zwracane zmienne
-# C         - lista z listami czasów obiektów
-# id        - lista z id obiektów task
+# C         - harmonogram czasów zakończenia
 
-def EvaluateC(_J):           
-    _, J_matrix = FromTasksToMatrix(_J)
+
+def EvaluateC(_J, _pi):           
+    J_matrix = [_J[_pi[i]] for i in range(len(_pi))]
     n = len(J_matrix)
     m = len(J_matrix[0])
     C = [[0] * m for _ in range(n)]
@@ -168,23 +157,25 @@ def EvaluateC(_J):
 
 # Oblicza Cmax dla kolejności zadań w podanym _J, rozszerzalne na wiele maszyn
 # Przyjmowane zmienne
-# _J        - lista obiektów typu Task
+# _J        - lista zadań
+# _pi       - permutacja
 #
 # Zwracane zmienne
-# Cmax      - lista z listami czasów obiektów
+# Cmax      - czas zakończenia ostatniego zadania
 
-def CalculateCmax( _J):
-    Cmax = EvaluateC(_J)
+def CalculateCmax( _J, _pi):
+    Cmax = EvaluateC(_J, _pi)
     return Cmax[-1][-1]
 
 # Oblicza C dla kolejności zadań w podanym _J, rozszerzalne na wiele maszyn
 # Przyjmowane zmienne
-# _J        - lista obiektów typu Task
-# C         - lista z listami czasów obiektów
+# _J        - lista zadań
+# _C        - harmonogram czasów zakończenia
+# _pi       - permutacja
 #
 # Zwracane zmienne
 # _         - lista z listami czasów rozpoczęcia obiektów
 
-def start_t(_J, C):
-    _, J_matrix = FromTasksToMatrix(_J)
-    return [[C[i][j] - J_matrix[i][j] for j in range(len(C[i]))] for i in range(len(C))]
+def start_t(_J, _pi, _C):
+    J_matrix = [_J[_pi[i]] for i in range(len(_pi))]
+    return [[_C[i][j] - J_matrix[i][j] for j in range(len(_C[i]))] for i in range(len(_C))]
