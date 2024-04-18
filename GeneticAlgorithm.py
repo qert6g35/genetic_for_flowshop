@@ -79,6 +79,25 @@ class GeneticAlgorithm:
             idx1, idx2 = random.sample(range(len(solution)), 2)
             solution[idx1], solution[idx2] = solution[idx2], solution[idx1]
         return solution
+    
+    def TournamentSelection(self,group_size,_evaluated_population:list):
+        survivors = []
+        evaluated_population = _evaluated_population
+        while len(evaluated_population)>0:
+            tournament_grup = []
+            if len(evaluated_population) > group_size :
+                for _ in range(0,group_size):
+                    individual = random.choice(evaluated_population)
+                    evaluated_population.remove(individual)
+                    tournament_grup.append(individual)
+            else:
+                tournament_grup = evaluated_population
+                evaluated_population = []
+            tournament_grup.sort(key=lambda x: x[1])
+            survivors.append(tournament_grup[0][0])
+        return survivors
+        
+
 
     def Genetic(self):
         """Implementacja genetycznego algorytmu optymalizacji.
@@ -97,7 +116,7 @@ class GeneticAlgorithm:
             evaluated_population.sort(key=lambda x: x[1])
 
             # Wybór najlepszych osobników do reprodukcji (selekcja)
-            selected_parents = [solution for solution, _ in evaluated_population[:self.population_size // 2]]
+            selected_parents = self.TournamentSelection(2,evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
 
             # Krzyżowanie i mutacja
             children = []
