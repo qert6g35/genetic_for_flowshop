@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import math
 from TestingEssentials import C_Max
 
 
@@ -84,8 +85,8 @@ class GeneticAlgorithm:
         return child
     
     # Mutacja
-    def mutate(self, solution):
-        """Mutacja osobnika.
+    def mutate(self, solution, i):
+        """Mutacja osobnika. w  funkcji dobierana jest jedna z metod mutacji w zależności od stopnia rzadkości losowania
 
         Args:
             solution (list): Osobnik, czyli permutacja zadań.
@@ -93,12 +94,31 @@ class GeneticAlgorithm:
         Returns:
             list: Zmutowany osobnik.
         """
-        # jakiś tam algorytm mutacji
-        if random.random() < self.mutation_rate:
+        mutation_occurance_chance = random.random()
+        #algorytm mutacji (HARD) zamiana ciągów miejscami
+        if mutation_occurance_chance < (self.mutation_rate ** 2):
+            print("HARD_!_!_!_"+ str(i))
+            newchild = solution[random.randint(1, int(len(solution) - 1)):]
+            newchild += [gene for gene in solution if gene not in newchild]
+            return newchild
+        #algorytm mutacji (MID) zamiana losowych elementów
+        if mutation_occurance_chance < self.mutation_rate:
+            print("MID_____"+ str(i))
             idx1, idx2 = random.sample(range(len(solution)), 2)
             solution[idx1], solution[idx2] = solution[idx2], solution[idx1]
+            return solution
+        #algorytm mutacji (SOFT) zamiana sąsiadów
+        if mutation_occurance_chance < math.sqrt(self.mutation_rate):
+            print("SOFT_____"+ str(i))
+            point = random.randint(1, int(len(solution) - 2))
+            solution[point], solution[point+1] = solution[point+1], solution[point]
+            return solution
+        
         return solution
     
+    
+
+
     def TournamentSelection(self,group_size,_evaluated_population:list):
         """Implementacja selekcji turniejowej   
 
@@ -138,7 +158,7 @@ class GeneticAlgorithm:
         # Generowanie 1. pokolenia
         population = self.initializePopulation()
 
-        for _ in range(self.generations):
+        for i in range(self.generations):
             # Ocena populacji
             evaluated_population = [(solution, self.evaluate(solution)) for solution in population]
             evaluated_population.sort(key=lambda x: x[1])
@@ -153,7 +173,7 @@ class GeneticAlgorithm:
                 parent2 = random.choice(selected_parents)
                 child = self.crossover_by_section(parent1, parent2)
                 if random.random() < self.mutation_rate:
-                    child = self.mutate(child)
+                    child = self.mutate(child,i)
                 children.append(child)
 
             # Aktualizacja populacji
