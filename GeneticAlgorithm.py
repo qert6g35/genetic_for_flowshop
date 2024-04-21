@@ -16,7 +16,7 @@ class GeneticAlgorithm:
         self.jobs = J
         self.permutation_size = len(J)
         self.population_size = min(population_size, np.math.factorial(self.permutation_size))
-        print("Rozmiar populacji jest ustawiony na: ",self.population_size)
+        #print("Rozmiar populacji jest ustawiony na: ",self.population_size)
 
     def initializePopulation(self):
         """inicjalizuje populacje dla algorytmu genetycznego
@@ -63,7 +63,26 @@ class GeneticAlgorithm:
         crossover_point = random.randint(1, len(parent1) - 1)
         child = parent1[:crossover_point] + [gene for gene in parent2 if gene not in parent1[:crossover_point]]
         return child
+    
+        # Krzyżowanie (crossover)
+    def crossover_by_section(self, parent1, parent2):
+        """krzyżowanie rodziców w którym rodzić1 daje ciąg swojej premutacji o długości 1/2 całego ciągu, a reszta jest uzupełniana gnamy z rodzica2. pkt startowy i końcowy ciągu jest wybierany losowo
 
+        Args:
+            parent1 (list): Pierwszy rodzic/ten którego ciąg wybierany jest mniej zniekształcany.
+            parent2 (list): Drugi rodzic.
+
+        Returns:
+            list: Potomek.
+        """
+        start_crossover_point = random.randint(0, int(len(parent1) /2))
+        end_crossover_point = start_crossover_point + int(len(parent1) /2)
+        if end_crossover_point > (len(parent1) -1):
+            end_crossover_point = len(parent1) -1
+        child = parent1[start_crossover_point:end_crossover_point] 
+        child += [gene for gene in parent2 if gene not in child]
+        return child
+    
     # Mutacja
     def mutate(self, solution):
         """Mutacja osobnika.
@@ -125,14 +144,14 @@ class GeneticAlgorithm:
             evaluated_population.sort(key=lambda x: x[1])
 
             # Wybór najlepszych osobników do reprodukcji (selekcja)
-            selected_parents = self.TournamentSelection(2,evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
+            selected_parents = self.TournamentSelection(3,evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
 
             # Krzyżowanie i mutacja
             children = []
             while len(children) < self.population_size:
                 parent1 = random.choice(selected_parents)
                 parent2 = random.choice(selected_parents)
-                child = self.crossover(parent1, parent2)
+                child = self.crossover_by_section(parent1, parent2)
                 if random.random() < self.mutation_rate:
                     child = self.mutate(child)
                 children.append(child)
@@ -141,7 +160,14 @@ class GeneticAlgorithm:
             population = children
 
             # Wybór najlepszego rozwiązania
-            best_solution, _ = evaluated_population[0]
-            best_solutions.append(best_solution)
+            if len(best_solutions) > 0:
+                best_solution, _ = evaluated_population[0]
+                if(C_Max(self.jobs,best_solutions[-1]) > C_Max(self.jobs,best_solution)):
+                    print("We got _new_ best Cmax:" + str(C_Max(self.jobs,best_solution)))
+                    best_solutions.append(best_solution)
+            else:
+                best_solution, _ = evaluated_population[0]
+                print("We got first best Cmax:" + str(C_Max(self.jobs,best_solution)))
+                best_solutions.append(best_solution)
 
         return best_solutions

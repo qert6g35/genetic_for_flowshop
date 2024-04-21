@@ -39,7 +39,7 @@ def GenerateJ(_n,_M,_seed):
 
 
 
-def getMakData():
+def getMakData(ograniczenie):
   """Gets data from Dr. Makuchowski's dataset and returns a list of cases.
 
   Returns:
@@ -49,7 +49,10 @@ def getMakData():
   """
   dataToReturn = []
   zbieranie_wymiarow = False
+  zbierz_rozw_neh = False
+  zbierz_perm_neh = False
   J = []
+  cmax = 0
   n_wczytywanie = 0 # zmienna pomocnicza do wczytywania danych
   m = 0 # ilość maszyn zapis per zestaw danych
   n = 0 # ilość zadań  zapis per zestaw danych
@@ -63,8 +66,8 @@ def getMakData():
       for strNum in line_data.split(' '):
         H.append(int(strNum))
       J.append(H)
-      if(n_wczytywanie == 0):
-        dataToReturn.append(J)
+      #if(n_wczytywanie == 0):
+      #  dataToReturn.append(J)
         #print(str(J))
 
     if(zbieranie_wymiarow):
@@ -78,8 +81,26 @@ def getMakData():
     if(len(line_data) > 4):
       if( line_data[0] + line_data[1] + line_data[2] + line_data[3] == 'data' ):
         zbieranie_wymiarow = True
-        if(line_data[-2] == '3'):
+        if(int(line_data[-4]+line_data[-3]+line_data[-2]) == ograniczenie):
+          print("OGRANICZONO, wczytanod do(ale bez) data."+line_data[-4]+line_data[-3]+line_data[-2])
+          print(ograniczenie)
           break
+
+    if zbierz_perm_neh:
+      H = []
+      for strNum in line_data.split(' '):
+        H.append(int(strNum))
+      dataToReturn.append([J,cmax,H])
+      zbierz_perm_neh = False
+    
+    if zbierz_rozw_neh:
+      cmax = int(line_data)
+      zbierz_rozw_neh = False
+      zbierz_perm_neh = True
+
+    if(len(line_data) >= 4):
+      if (line_data[0] + line_data[1] + line_data[2] == 'neh'):
+        zbierz_rozw_neh = True
 
   return dataToReturn
 
