@@ -81,6 +81,15 @@ class GeneticAlgorithm:
         return solution
     
     def TournamentSelection(self,group_size,_evaluated_population:list):
+        """Implementacja selekcji turniejowej   
+
+        Args:
+            group_size (Int): wielkość grupy turniejowej / ilosć osobników spadnie ! group_size KROTNIE !   
+            _evaluated_population (lista tupli {permutacji,C_max_permutacji}): populacja z policzonymi czasami wykonywania
+
+        Returns:
+            survivors ([permutacje]):nowa populacja składająca się z osobników które przetrwały turnieje
+        """
         survivors = []
         evaluated_population = _evaluated_population
         while len(evaluated_population)>0:
