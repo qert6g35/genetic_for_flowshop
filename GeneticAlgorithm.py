@@ -11,7 +11,8 @@ from TestingEssentials import C_Max
 '''
 
 class GeneticAlgorithm:
-    def __init__(self, J, population_size, mutation_rate, generations):
+    def __init__(self, J, population_size, mutation_rate, generations,mutatuon_type):
+        self.T = mutatuon_type
         self.mutation_rate = mutation_rate
         self.generations = generations
         self.jobs = J
@@ -85,7 +86,7 @@ class GeneticAlgorithm:
         return child
     
     # Mutacja
-    def mutate(self, solution, i):
+    def mutate(self, solution, T):
         """Mutacja osobnika. w  funkcji dobierana jest jedna z metod mutacji w zależności od stopnia rzadkości losowania
 
         Args:
@@ -96,20 +97,17 @@ class GeneticAlgorithm:
         """
         mutation_occurance_chance = random.random()
         #algorytm mutacji (HARD) zamiana ciągów miejscami
-        if mutation_occurance_chance < (self.mutation_rate ** 2):
-            print("HARD_!_!_!_"+ str(i))
+        if self.T == 1 and mutation_occurance_chance < self.mutation_rate: #mutation_occurance_chance < (self.mutation_rate ** 2)
             newchild = solution[random.randint(1, int(len(solution) - 1)):]
             newchild += [gene for gene in solution if gene not in newchild]
             return newchild
         #algorytm mutacji (MID) zamiana losowych elementów
-        if mutation_occurance_chance < self.mutation_rate:
-            print("MID_____"+ str(i))
+        if self.T == 2 and mutation_occurance_chance < self.mutation_rate: #mutation_occurance_chance < self.mutation_rate
             idx1, idx2 = random.sample(range(len(solution)), 2)
             solution[idx1], solution[idx2] = solution[idx2], solution[idx1]
             return solution
         #algorytm mutacji (SOFT) zamiana sąsiadów
-        if mutation_occurance_chance < math.sqrt(self.mutation_rate):
-            print("SOFT_____"+ str(i))
+        if self.T == 3 and mutation_occurance_chance < self.mutation_rate: #mutation_occurance_chance < math.sqrt(self.mutation_rate)
             point = random.randint(1, int(len(solution) - 2))
             solution[point], solution[point+1] = solution[point+1], solution[point]
             return solution
@@ -164,7 +162,7 @@ class GeneticAlgorithm:
             evaluated_population.sort(key=lambda x: x[1])
 
             # Wybór najlepszych osobników do reprodukcji (selekcja)
-            selected_parents = self.TournamentSelection(3,evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
+            selected_parents = self.TournamentSelection(int(math.sqrt(self.population_size)),evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
 
             # Krzyżowanie i mutacja
             children = []
@@ -183,11 +181,11 @@ class GeneticAlgorithm:
             if len(best_solutions) > 0:
                 best_solution, _ = evaluated_population[0]
                 if(C_Max(self.jobs,best_solutions[-1]) > C_Max(self.jobs,best_solution)):
-                    print("We got _new_ best Cmax:" + str(C_Max(self.jobs,best_solution)))
+                    #print("We got _new_ best Cmax:" + str(C_Max(self.jobs,best_solution)))
                     best_solutions.append(best_solution)
             else:
                 best_solution, _ = evaluated_population[0]
-                print("We got first best Cmax:" + str(C_Max(self.jobs,best_solution)))
+                #print("We got first best Cmax:" + str(C_Max(self.jobs,best_solution)))
                 best_solutions.append(best_solution)
 
         return best_solutions
