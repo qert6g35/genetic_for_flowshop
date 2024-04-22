@@ -13,7 +13,6 @@ for data_pack in data_mega_pack:
     print("         Started data pack:" + str(data_pack_num))
     J = data_pack[0]
     # Parametry algorytmu genetycznego
-    mutation_type = 1 # 1-HARD 2-MID 3-SOFT
     population_size = 50
     mutation_rate = 0.2
     generations = int(10 ** (len(J)/2)) #TODO uwaga to wypadało by dobrać najlepiej jakąś fajną funkcją 
@@ -22,7 +21,14 @@ for data_pack in data_mega_pack:
     #print(generations)
 
     # Uruchomienie algorytmu genetycznego
-    ga = GeneticAlgorithm(J, population_size, mutation_rate, generations,mutation_type, crossover_type="section", selection_type="roulette")
+    ga = GeneticAlgorithm(J, 
+                          population_size, 
+                          mutation_rate, 
+                          generations, 
+                          mutation_type="soft", 
+                          crossover_type="section", 
+                          selection_type="roulette")
+    
     best_solutions = ga.Genetic()
 
     best_solution = best_solutions[-1]
