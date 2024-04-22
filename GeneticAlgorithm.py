@@ -11,13 +11,15 @@ from TestingEssentials import C_Max
 '''
 
 class GeneticAlgorithm:
-    def __init__(self, J, population_size, mutation_rate, generations,mutatuon_type):
+    def __init__(self, J, population_size, mutation_rate, generations,mutatuon_type,crossover_type = "simple", selection_type = "tournament"):
         self.T = mutatuon_type
         self.mutation_rate = mutation_rate
         self.generations = generations
         self.jobs = J
         self.permutation_size = len(J)
         self.population_size = min(population_size, np.math.factorial(self.permutation_size))
+        self.crossover_type = crossover_type
+        self.selection_type = selection_type
         #print("Rozmiar populacji jest ustawiony na: ",self.population_size)
 
     def initializePopulation(self):
@@ -50,8 +52,19 @@ class GeneticAlgorithm:
 
     # Operatory genetyczne
 
+    def crossover(self,parent1,parent2):
+        assert self.crossover_type in ["simple", "section", "nearest"], "Invalid crossover type"
+        if self.crossover_type == "simple":
+            return self.crossover_simple(parent1,parent2)
+        if self.crossover_type == "section":
+            return self.crossover_by_section(parent1,parent2)
+        if self.crossover_type == "nearest":
+            return self.crossover_with_nn(parent1,parent2)
+
+            
+        
     # Krzyżowanie (crossover)
-    def crossover(self, parent1, parent2):
+    def crossover_simple(self, parent1, parent2):
         """Krzyżowanie dwóch rodziców.
 
         Args:
@@ -85,6 +98,49 @@ class GeneticAlgorithm:
         child += [gene for gene in parent2 if gene not in child]
         return child
     
+    # Krzyżowanie (crossover)
+    def crossover_with_nn(self, parent1, parent2):
+        """krzyżowanie wybierające losowy ciąg z permutacji rodzica a reszte uzupełnia na zasadzie greedy
+
+        Args:
+            parent1 (list): Pierwszy rodzic/ten którego ciąg wybierany jest mniej zniekształcany.
+            parent2 (list): Drugi rodzic - nie ma wkładu w wartości dziecka
+
+        Returns:
+            list: Potomek.
+        """
+        
+        crossover_points = [random.randint(0, int(len(parent1)-1)), random.randint(0, int(len(parent1)-1))]
+        
+        while crossover_points[0]==crossover_points[1]:
+            crossover_points = [random.randint(0, int(len(parent1)-1)), random.randint(0, int(len(parent1)-1))]
+            
+        crossover_points.sort()
+        child = parent1[crossover_points[0]:crossover_points[1]] 
+        notchild = parent1[0:crossover_points[0]]+parent1[crossover_points[1]:len(parent1)]
+
+        while len(child) < crossover_points[1]:
+            bestcmax = -1
+            for i in range(0,len(notchild)):
+                cmax = C_Max(self.jobs, [notchild[i]] + child)
+                if cmax < bestcmax or bestcmax == -1:
+                    bestcmax = cmax
+                    j = i
+            child.insert(0,notchild[j])
+            notchild.pop(j)
+
+        while len(child) < len(parent1):
+            bestcmax = -1
+            for i in range(0,len(notchild)):
+                cmax = C_Max(self.jobs, child + [notchild[i]])
+                if cmax < bestcmax or bestcmax == -1:
+                    bestcmax = cmax
+                    j = i
+            child.append(notchild[j])
+            notchild.pop(j)
+
+        return child
+    
     # Mutacja
     def mutate(self, solution, T):
         """Mutacja osobnika. w  funkcji dobierana jest jedna z metod mutacji w zależności od stopnia rzadkości losowania
@@ -114,7 +170,13 @@ class GeneticAlgorithm:
         
         return solution
     
-    
+    def Selection(self,evaluated_population):
+        assert self.selection_type in ["roulette", "tournament"], "Invalid selection type"
+        if self.selection_type == "tournament":
+            return self.TournamentSelection(int(math.sqrt(self.population_size)),evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
+        if self.selection_type == "roulette":
+            return self.RouletteSelection(int(math.sqrt(self.population_size)),evaluated_population)
+
 
 
     def TournamentSelection(self,group_size,_evaluated_population:list):
@@ -143,7 +205,33 @@ class GeneticAlgorithm:
             survivors.append(tournament_grup[0][0])
         return survivors
         
+    def RouletteSelection(self, num_survivors, evaluated_population):
+        """Selekcja ruletkowa.
 
+        Args:
+            population (list): Lista osobników w populacji.
+            fitness_values (list): Wartości dopasowania dla osobników.
+
+        Returns:
+            list: Osobnik wybrany za pomocą selekcji ruletkowej.
+        """
+        population, fitness_values = zip(*evaluated_population)
+        total_fitness = sum(fitness_values)
+        selection_probabilities = [fitness / total_fitness for fitness in fitness_values]
+
+
+        # Wybór osobników, którzy przetrwają
+        survivors = []
+        for _ in range(num_survivors):
+            roulette_value = random.uniform(0, 1)
+            cumulative_probability = 0
+            for i, probability in enumerate(selection_probabilities):
+                cumulative_probability += probability
+                if roulette_value <= cumulative_probability:
+                    survivors.append(population[i])
+                    break
+
+        return survivors
 
     def Genetic(self):
         """Implementacja genetycznego algorytmu optymalizacji.
@@ -162,14 +250,15 @@ class GeneticAlgorithm:
             evaluated_population.sort(key=lambda x: x[1])
 
             # Wybór najlepszych osobników do reprodukcji (selekcja)
-            selected_parents = self.TournamentSelection(int(math.sqrt(self.population_size)),evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
-
+            # selected_parents = self.TournamentSelection(int(math.sqrt(self.population_size)),evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
+            selected_parents = self.Selection(evaluated_population)
+            
             # Krzyżowanie i mutacja
             children = []
             while len(children) < self.population_size:
                 parent1 = random.choice(selected_parents)
                 parent2 = random.choice(selected_parents)
-                child = self.crossover_by_section(parent1, parent2)
+                child = self.crossover(parent1, parent2)
                 if random.random() < self.mutation_rate:
                     child = self.mutate(child,i)
                 children.append(child)
