@@ -132,8 +132,19 @@ def EvaluateC(_J, _pi):
       for i in range(m):
           C[j][i] = max(C[j-1][i], C[j][i-1]) + J_matrix[j][i] # zadanie moze zacząć się dopiero jak jego część na poprzedniej maszynie zostanie zrealizowana oraz aktualna maszyna sie zwolni. 
                                                           # Aby uzyskać czas ukończenia musimy dodać jeszcze czas trwania
-  return C
+  return C 
 
+def C_Append(_C, _j): 
+  m = len(_C[0])
+  C = _C
+  lastElem = []
+  lastElem.append(C[-1][0]+_j[0])
+  
+  # Czasy zakończenia pozostałych zadań
+  for i in range(1,m):
+      lastElem.append(max(C[-1][i], lastElem[-1]) + _j[i]) # zadanie moze zacząć się dopiero jak jego część na poprzedniej maszynie zostanie zrealizowana oraz aktualna maszyna sie zwolni. 
+  C.append(lastElem) 
+  return C
 
 
 def C_MaxFromC(C):

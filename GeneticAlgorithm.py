@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-from TestingEssentials import C_Max
+from TestingEssentials import C_Max, EvaluateC, C_MaxFromC, C_Append
 
 
 '''Słowniczek
@@ -20,6 +20,7 @@ class GeneticAlgorithm:
         self.population_size = min(population_size, np.math.factorial(self.permutation_size))
         self.crossover_type = crossover_type
         self.selection_type = selection_type
+        self.solution_cache = {}
         #print("Rozmiar populacji jest ustawiony na: ",self.population_size)
 
     def initializePopulation(self):
@@ -46,14 +47,22 @@ class GeneticAlgorithm:
         Returns:
             int: Wartość funkcji celu (makespan).
         """
-        # Cmax
+        # Sprawdzenie, czy wynik już istnieje w pamięci
+        if tuple(solution) in self.solution_cache:
+            return self.solution_cache[tuple(solution)]
+
+        # Obliczenie wartości funkcji celu (makespan)
         makespan = C_Max(self.jobs, solution)
+        
+        # Zapisanie wyniku do pamięci
+        self.solution_cache[tuple(solution)] = makespan
         return makespan
 
     # Operatory genetyczne
 
     def crossover(self,parent1,parent2):
-        assert self.crossover_type in ["simple", "section", "nearest"], "Invalid crossover type"
+        types = ["simple", "section", "nearest"]
+        assert self.crossover_type in types, "Invalid crossover type, possible options are: " + str(types)
         if self.crossover_type == "simple":
             return self.crossover_simple(parent1,parent2)
         if self.crossover_type == "section":
@@ -99,6 +108,49 @@ class GeneticAlgorithm:
         return child
     
     # Krzyżowanie (crossover)
+    def crossover_with_nnbf(self, parent1, parent2):
+        """krzyżowanie wybierające losowy ciąg z permutacji rodzica a reszte uzupełnia dobierając kolejno najlepsze z możliwych kombinacji element po elemencie
+
+        Args:
+            parent1 (list): Pierwszy rodzic/ten którego ciąg wybierany jest mniej zniekształcany.
+            parent2 (list): Drugi rodzic - nie ma wkładu w wartości dziecka
+
+        Returns:
+            list: Potomek.
+        """
+        
+        crossover_points = [random.randint(0, int(len(parent1)-1)), random.randint(0, int(len(parent1)-1))]
+        
+        while crossover_points[0]==crossover_points[1]:
+            crossover_points = [random.randint(0, int(len(parent1)-1)), random.randint(0, int(len(parent1)-1))]
+            
+        crossover_points.sort()
+        child = parent1[crossover_points[0]:crossover_points[1]] 
+        notchild = parent1[0:crossover_points[0]]+parent1[crossover_points[1]:len(parent1)]
+        
+        while len(child) < crossover_points[1]:
+            bestcmax = -1
+            for i in range(0,len(notchild)):
+                cmax = self.evaluate([notchild[i]] + child)
+                if cmax < bestcmax or bestcmax == -1:
+                    bestcmax = cmax
+                    j = i
+            child.insert(0,notchild[j])
+            notchild.pop(j)
+
+        while len(child) < len(parent1):
+            bestcmax = -1
+            for i in range(0,len(notchild)):
+                cmax = self.evaluate(child + [notchild[i]])
+                if cmax < bestcmax or bestcmax == -1:
+                    bestcmax = cmax
+                    j = i
+            child.append(notchild[j])
+            notchild.pop(j)
+            
+        return child
+    
+        # Krzyżowanie (crossover)
     def crossover_with_nn(self, parent1, parent2):
         """krzyżowanie wybierające losowy ciąg z permutacji rodzica a reszte uzupełnia na zasadzie greedy
 
@@ -118,28 +170,11 @@ class GeneticAlgorithm:
         crossover_points.sort()
         child = parent1[crossover_points[0]:crossover_points[1]] 
         notchild = parent1[0:crossover_points[0]]+parent1[crossover_points[1]:len(parent1)]
-
-        while len(child) < crossover_points[1]:
-            bestcmax = -1
-            for i in range(0,len(notchild)):
-                cmax = C_Max(self.jobs, [notchild[i]] + child)
-                if cmax < bestcmax or bestcmax == -1:
-                    bestcmax = cmax
-                    j = i
-            child.insert(0,notchild[j])
-            notchild.pop(j)
-
-        while len(child) < len(parent1):
-            bestcmax = -1
-            for i in range(0,len(notchild)):
-                cmax = C_Max(self.jobs, child + [notchild[i]])
-                if cmax < bestcmax or bestcmax == -1:
-                    bestcmax = cmax
-                    j = i
-            child.append(notchild[j])
-            notchild.pop(j)
-
+        notchild.sort(key=lambda x: self.jobs[x][0]) 
+        child = notchild[0:crossover_points[0]]+child+notchild[crossover_points[0]:]
+            
         return child
+    
     
     # Mutacja
     def mutate(self, solution):
@@ -152,7 +187,8 @@ class GeneticAlgorithm:
             list: Zmutowany osobnik.
         """
         mutation_occurance_chance = random.random()
-        assert self.mutation_type in ["hard", "mid","soft"], "Invalid mutation type"
+        types = ["hard", "mid","soft"]
+        assert self.mutation_type in types, "Invalid mutation type, possible options are: " + str(types)
         #algorytm mutacji (HARD) zamiana ciągów miejscami
         if self.mutation_type == "hard" and mutation_occurance_chance < self.mutation_rate: #mutation_occurance_chance < (self.mutation_rate ** 2)
             newchild = solution[random.randint(1, int(len(solution) - 1)):]
@@ -172,7 +208,8 @@ class GeneticAlgorithm:
         return solution
     
     def Selection(self,evaluated_population):
-        assert self.selection_type in ["roulette", "tournament"], "Invalid selection type"
+        types = ["roulette", "tournament"]
+        assert self.selection_type in types, "Invalid selection type, possible options are: " + str(types)
         if self.selection_type == "tournament":
             return self.TournamentSelection(int(math.sqrt(self.population_size)),evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
         if self.selection_type == "roulette":
