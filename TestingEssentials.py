@@ -32,8 +32,8 @@ def GenerateJ(_n,_M,_seed):
   J = []
   pi = []
   for i in range(n):
-      p_ij = [rng.next_int(1, 9) for _ in range(M)]
-      pi.append(i);
+      p_ij = [rng.next_int(1, 20) for _ in range(M)]
+      pi.append(i)
       J.append(copy.deepcopy(p_ij))
   return J, pi
 
