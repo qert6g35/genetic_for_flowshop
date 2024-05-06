@@ -11,7 +11,7 @@ from TestingEssentials import C_Max, EvaluateC, C_MaxFromC, C_Append
 '''
 
 class GeneticAlgorithm:
-    def __init__(self, J, population_size, mutation_rate, generations,mutation_type = "soft",crossover_type = "simple", selection_type = "tournament"):
+    def __init__(self, J, population_size, mutation_rate, generations,mutation_type = "soft",crossover_type = "simple", selection_type = "tournament", register_all = False):
         self.mutation_type = mutation_type
         self.mutation_rate = mutation_rate
         self.generations = generations
@@ -21,6 +21,7 @@ class GeneticAlgorithm:
         self.crossover_type = crossover_type
         self.selection_type = selection_type
         self.solution_cache = {}
+        self.register_all = register_all
         #print("Rozmiar populacji jest ustawiony na: ",self.population_size)
 
     def initializePopulation(self):
@@ -290,7 +291,6 @@ class GeneticAlgorithm:
             # Wybór najlepszych osobników do reprodukcji (selekcja)
             # selected_parents = self.TournamentSelection(int(math.sqrt(self.population_size)),evaluated_population) #[solution for solution, _ in evaluated_population[:self.population_size // 2]]
             selected_parents = self.Selection(evaluated_population)
-            
             # Krzyżowanie i mutacja
             children = []
             while len(children) < self.population_size:
@@ -307,9 +307,11 @@ class GeneticAlgorithm:
             # Wybór najlepszego rozwiązania
             if len(best_solutions) > 0:
                 best_solution, _ = evaluated_population[0]
-                if(C_Max(self.jobs,best_solutions[-1]) > C_Max(self.jobs,best_solution)):
+                if(C_Max(self.jobs,best_solutions[-1]) > C_Max(self.jobs,best_solution) or self.register_all):
                     #print("We got _new_ best Cmax:" + str(C_Max(self.jobs,best_solution)))
                     best_solutions.append(best_solution)
+                else:
+                    best_solutions.append(best_solutions[-1])
             else:
                 best_solution, _ = evaluated_population[0]
                 #print("We got first best Cmax:" + str(C_Max(self.jobs,best_solution)))
