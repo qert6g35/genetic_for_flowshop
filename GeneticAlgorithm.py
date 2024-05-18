@@ -62,12 +62,14 @@ class GeneticAlgorithm:
     # Operatory genetyczne
 
     def crossover(self,parent1,parent2):
-        types = ["simple", "section", "nearest"]
+        types = ["simple", "section","sectionSP","nearest"]
         assert self.crossover_type in types, "Invalid crossover type, possible options are: " + str(types)
         if self.crossover_type == "simple":
             return self.crossover_simple(parent1,parent2)
         if self.crossover_type == "section":
             return self.crossover_by_section(parent1,parent2)
+        if self.crossover_type == "sectionSP":
+            return self.crossover_by_section_save_placment(parent1,parent2)
         if self.crossover_type == "nearest":
             return self.crossover_with_nn(parent1,parent2)
 
@@ -106,6 +108,40 @@ class GeneticAlgorithm:
             end_crossover_point = len(parent1) -1
         child = parent1[start_crossover_point:end_crossover_point] 
         child += [gene for gene in parent2 if gene not in child]
+        return child
+    
+        # Krzyżowanie (crossover)
+    def crossover_by_section_save_placment(self, parent1, parent2):
+        """krzyżowanie rodziców w którym rodzić1 daje ciąg swojej premutacji o długości 1/2 całego ciągu, a reszta jest uzupełniana gnamy z rodzica2. pkt startowy i końcowy ciągu jest wybierany losowo. ciąg z rodzica 1 ma zachwać swoje połorzenie
+
+        Args:
+            parent1 (list): Pierwszy rodzic/ten którego ciąg wybierany jest mniej zniekształcany.
+            parent2 (list): Drugi rodzic.
+
+        Returns:
+            list: Potomek.
+        """
+        crossover_points = [random.randint(0, int(len(parent1)-1)), random.randint(0, int(len(parent1)-1))]
+
+        while crossover_points[0]==crossover_points[1]:
+            crossover_points = [random.randint(0, int(len(parent1)-1)), random.randint(0, int(len(parent1)-1))]
+            
+        crossover_points.sort()
+        child = parent1[crossover_points[0]:crossover_points[-1]] 
+        not_in_child = []
+        not_in_child += [gene for gene in parent2 if gene not in child]
+
+        temp = []
+        for _ in range(0,crossover_points[0]):
+            temp.append(not_in_child[0])
+            not_in_child.pop(0)
+
+        child = temp + child
+
+        while len(not_in_child) > 0:
+            child.append(not_in_child[0])
+            not_in_child.pop(0)
+        
         return child
     
     # Krzyżowanie (crossover)
