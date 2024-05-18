@@ -62,7 +62,7 @@ class GeneticAlgorithm:
     # Operatory genetyczne
 
     def crossover(self,parent1,parent2):
-        types = ["simple", "section","sectionSP","nearest"]
+        types = ["simple", "section","sectionSP","greedy"]
         assert self.crossover_type in types, "Invalid crossover type, possible options are: " + str(types)
         if self.crossover_type == "simple":
             return self.crossover_simple(parent1,parent2)
@@ -70,7 +70,7 @@ class GeneticAlgorithm:
             return self.crossover_by_section(parent1,parent2)
         if self.crossover_type == "sectionSP":
             return self.crossover_by_section_save_placment(parent1,parent2)
-        if self.crossover_type == "nearest":
+        if self.crossover_type == "greedy":
             return self.crossover_with_nn(parent1,parent2)
 
             
