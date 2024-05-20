@@ -125,22 +125,13 @@ class GeneticAlgorithm:
 
         while crossover_points[0]==crossover_points[1]:
             crossover_points = [random.randint(0, int(len(parent1)-1)), random.randint(0, int(len(parent1)-1))]
-            
+
         crossover_points.sort()
         child = parent1[crossover_points[0]:crossover_points[-1]] 
         not_in_child = []
         not_in_child += [gene for gene in parent2 if gene not in child]
 
-        temp = []
-        for _ in range(0,crossover_points[0]):
-            temp.append(not_in_child[0])
-            not_in_child.pop(0)
-
-        child = temp + child
-
-        while len(not_in_child) > 0:
-            child.append(not_in_child[0])
-            not_in_child.pop(0)
+        child = not_in_child[0:crossover_points[0]] + child + not_in_child[crossover_points[0]:(len(parent1)-1)]
         
         return child
     
